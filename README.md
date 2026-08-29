@@ -1,41 +1,90 @@
 # Serverless Document Processor
 
-A serverless document processing system built using Amazon S3, AWS Lambda, IAM, and Amazon CloudWatch.
+A serverless document processing application built using **AWS, Python, Docker, and GitHub Actions**. Users upload text documents through a web interface, which are securely stored and automatically processed using AWS Lambda.
 
-The system automatically processes a document whenever it is uploaded to an Amazon S3 bucket. AWS Lambda reads the document, calculates basic document statistics, generates a JSON result, and stores the processed result back in S3.
+## Features
 
+- Text document upload and validation
+- S3 pre-signed URL based uploads
+- Event-driven document processing
+- Character, word, and line counting
+- JSON result generation
+- CloudWatch monitoring and logging
+- IAM-based access control
+- Dockerized frontend
+- GitHub Actions CI
 
-## Workflow
+## Architecture
 
-1. A user uploads a text document to the `documents/` folder in Amazon S3.
-2. Amazon S3 generates an Object Created event.
-3. The event triggers the AWS Lambda function.
-4. Lambda reads the uploaded document from S3.
-5. Lambda calculates:
-   - Character count
-   - Word count
-   - Line count
-6. Lambda creates a JSON processing result.
-7. The JSON result is stored in the `processed/` folder.
-8. Amazon CloudWatch records Lambda execution logs.
+User
+ ↓
+Frontend
+ ↓
+API Gateway
+ ↓
+GenerateUploadURL Lambda
+ ↓
+S3 (documents/)
+ ↓
+S3 Event
+ ↓
+Process Document Lambda
+ ↓
+S3 (processed/)
+ ↓
+GetProcessingResult Lambda
+ ↓
+API Gateway
+ ↓
+Frontend
 
-## AWS Services Used
+AWS Services
 
-| Service | Purpose |
-|---|---|
-| Amazon S3 | Stores input documents and processed results |
-| AWS Lambda | Serverless document processing |
-| AWS IAM | Provides secure permissions to Lambda |
-| Amazon CloudWatch | Logging and monitoring |
+| Service     | Purpose                           |
+| ----------- | --------------------------------- |
+| S3          | Document and result storage       |
+| Lambda      | Document processing and API logic |
+| API Gateway | API endpoints                     |
+| IAM         | Access control                    |
+| CloudWatch  | Logs and monitoring               |
 
-## Project Structure
+Tech Stack
 
-```text
+Frontend: HTML, CSS, JavaScript
+Backend: Python, Boto3, AWS Lambda
+Cloud: S3, API Gateway, IAM, CloudWatch
+DevOps: Docker, Nginx, Git, GitHub Actions
+
+Project Structure
+
 serverless-document-processor/
-│
-├── architecture/
-│   └── architecture.png
-│
-├── lambda_function.py
-├── test_event.json
-└── README.md
+├── .github/workflows/ci.yml
+├── frontend/
+│   ├── Dockerfile
+│   └── index.html
+├── lambda/
+│   ├── generate_upload_url/
+│   ├── process_document/
+│   └── get_processing_result/
+├── .gitignore
+├── README.md
+└── test_event.json
+
+Docker
+docker build -t serverless-document-processor ./frontend
+docker run -d -p 8080:80 --name serverless-frontend serverless-document-processor
+
+Open http://localhost:8080 to use the frontend.
+
+CI
+
+GitHub Actions automatically validates the Python Lambda code and builds the Docker image whenever changes are pushed to main.
+
+Security
+IAM-based permissions
+Temporary S3 pre-signed URLs
+No AWS credentials stored in the repository
+Credentials excluded using .gitignore
+Key Skills
+
+AWS | Lambda | S3 | API Gateway | IAM | CloudWatch | Python | Boto3 | Docker | Nginx | GitHub Actions | Serverless Architecture
