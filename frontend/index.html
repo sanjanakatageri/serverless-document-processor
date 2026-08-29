@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Serverless Document Processor</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0 0 10px;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .upload-box {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: #f8fafc;
+        }
+
+        .upload-icon {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        .upload-box h3 {
+            margin: 5px 0 8px;
+        }
+
+        .upload-box p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 22px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            text-align: center;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        #result {
+            display: none;
+            margin-top: 30px;
+        }
+
+        #result h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .document-name {
+            text-align: center;
+            color: #475569;
+            margin-bottom: 20px;
+            word-break: break-word;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 18px 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .success {
+            margin-top: 18px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .info {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .card {
+                padding: 25px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <div class="header">
+
+            <h1>Serverless Document Processor</h1>
+
+            <p>
+                Upload a text document and let our cloud-based
+                serverless system analyze it automatically.
+            </p>
+
+        </div>
+
+
+        <div class="upload-box">
+
+            <div class="upload-icon">📄</div>
+
+            <h3>Select Your Document</h3>
+
+            <p>
+                Supported format: TXT | Maximum size: 5 MB
+            </p>
+
+            <input
+                type="file"
+                id="fileInput"
+                accept=".txt"
+            >
+
+            <button id="uploadButton">
+                Upload & Process
+            </button>
+
+        </div>
+
+
+        <div id="status">
+            Status: Ready
+        </div>
+
+
+        <div id="result">
+
+            <h2>Processing Result</h2>
+
+            <div class="document-name">
+
+                <strong>Document:</strong>
+                <span id="document"></span>
+
+            </div>
+
+
+            <div class="stats">
+
+                <div class="stat-card">
+
+                    <span
+                        class="stat-number"
+                        id="characters">
+                        -
+                    </span>
+
+                    <span class="stat-label">
+                        Characters
+                    </span>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span
+                        class="stat-number"
+                        id="words">
+                        -
+                    </span>
+
+                    <span class="stat-label">
+                        Words
+                    </span>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span
+                        class="stat-number"
+                        id="lines">
+                        -
+                    </span>
+
+                    <span class="stat-label">
+                        Lines
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="success"
+                id="processingStatus">
+            </div>
+
+        </div>
+
+
+        <div class="info">
+
+            Files are securely uploaded to Amazon S3
+            and processed automatically using AWS Lambda.
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const API_BASE_URL =
+    "https://jtlu40rwub.execute-api.ap-south-1.amazonaws.com";
+
+const UPLOAD_API_URL =
+    API_BASE_URL + "/upload";
+
+const RESULT_API_URL =
+    API_BASE_URL + "/result";
+
+
+const MAX_FILE_SIZE =
+    5 * 1024 * 1024;
+
+
+const fileInput =
+    document.getElementById("fileInput");
+
+const uploadButton =
+    document.getElementById("uploadButton");
+
+const status =
+    document.getElementById("status");
+
+const resultBox =
+    document.getElementById("result");
+
+const documentElement =
+    document.getElementById("document");
+
+const charactersElement =
+    document.getElementById("characters");
+
+const wordsElement =
+    document.getElementById("words");
+
+const linesElement =
+    document.getElementById("lines");
+
+const processingStatusElement =
+    document.getElementById("processingStatus");
+
+
+uploadButton.addEventListener(
+    "click",
+    async () => {
+
+        const file =
+            fileInput.files[0];
+
+
+        // Check whether a file was selected
+
+        if (!file) {
+
+            status.textContent =
+                "Please select a document first.";
+
+            return;
+        }
+
+
+        // Check file type
+
+        if (
+            !file.name
+                .toLowerCase()
+                .endsWith(".txt")
+        ) {
+
+            status.textContent =
+                "Only TXT files are supported.";
+
+            return;
+        }
+
+
+        // Check file size
+
+        if (file.size > MAX_FILE_SIZE) {
+
+            status.textContent =
+                "File is too large. Maximum size is 5 MB.";
+
+            return;
+        }
+
+
+        try {
+
+            uploadButton.disabled = true;
+
+            resultBox.style.display = "none";
+
+
+            // Create a unique filename
+
+            const timestamp =
+                new Date()
+                    .toISOString()
+                    .replace(/[-:.TZ]/g, "");
+
+            const randomNumber =
+                Math.floor(
+                    Math.random() * 100000
+                );
+
+            const originalName =
+                file.name
+                    .replace(/[^a-zA-Z0-9._-]/g, "_");
+
+            const uniqueFileName =
+                timestamp +
+                "_" +
+                randomNumber +
+                "_" +
+                originalName;
+
+
+            // STEP 1
+            // Request secure upload URL
+
+            status.textContent =
+                "Generating secure upload URL...";
+
+
+            const response =
+                await fetch(
+                    UPLOAD_API_URL,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            file_name:
+                                uniqueFileName
+                        })
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Could not generate upload URL."
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            if (!data.upload_url) {
+
+                throw new Error(
+                    "Upload URL was not returned."
+                );
+
+            }
+
+
+            // STEP 2
+            // Upload file to S3
+
+            status.textContent =
+                "Uploading document to cloud storage...";
+
+
+            const uploadResponse =
+                await fetch(
+                    data.upload_url,
+                    {
+                        method: "PUT",
+                        body: file
+                    }
+                );
+
+
+            if (!uploadResponse.ok) {
+
+                throw new Error(
+                    "Document upload failed."
+                );
+
+            }
+
+
+            // STEP 3
+            // Wait for processing
+
+            await waitForProcessing(
+                uniqueFileName
+            );
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            status.textContent =
+                "Error: " +
+                error.message;
+
+        } finally {
+
+            uploadButton.disabled = false;
+
+        }
+
+    }
+);
+
+
+// Check whether Lambda finished processing
+
+async function waitForProcessing(
+    fileName
+) {
+
+    const maxAttempts = 10;
+
+    const delay = 2000;
+
+
+    for (
+        let attempt = 1;
+        attempt <= maxAttempts;
+        attempt++
+    ) {
+
+        status.textContent =
+            "Processing document... " +
+            "(" +
+            attempt +
+            "/" +
+            maxAttempts +
+            ")";
+
+
+        try {
+
+            const resultResponse =
+                await fetch(
+                    RESULT_API_URL +
+                    "?file_name=" +
+                    encodeURIComponent(
+                        fileName
+                    )
+                );
+
+
+            if (resultResponse.ok) {
+
+                const result =
+                    await resultResponse.json();
+
+
+                if (
+                    result.status ===
+                    "processed"
+                ) {
+
+                    displayResult(
+                        result
+                    );
+
+                    status.textContent =
+                        "Document processed successfully.";
+
+                    return;
+
+                }
+
+            }
+
+        } catch (error) {
+
+            console.log(
+                "Result not available yet."
+            );
+
+        }
+
+
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    delay
+                )
+        );
+
+    }
+
+
+    throw new Error(
+        "Processing is taking longer than expected. Please try again."
+    );
+
+}
+
+
+// Display processing result
+
+function displayResult(result) {
+
+    documentElement.textContent =
+        result.document;
+
+    charactersElement.textContent =
+        result.characters;
+
+    wordsElement.textContent =
+        result.words;
+
+    linesElement.textContent =
+        result.lines;
+
+    processingStatusElement.textContent =
+        "✓ Document processed successfully";
+
+    resultBox.style.display =
+        "block";
+
+}
+
+</script>
+
+</body>
+</html>
