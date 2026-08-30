@@ -34,19 +34,7 @@ jobs:
         run: |
           docker build -t serverless-document-processor ./frontend
 
-      - name: Debug OIDC claims
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const token = await core.getIDToken('sts.amazonaws.com');
-            const payload = JSON.parse(
-              Buffer.from(token.split('.')[1], 'base64url').toString()
-            );
-
-            console.log("OIDC subject:", payload.sub);
-            console.log("OIDC audience:", payload.aud);
-
-      - name: Configure AWS credentials
+            - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::517588217167:role/GitHubActionsFrontendDeployRole
