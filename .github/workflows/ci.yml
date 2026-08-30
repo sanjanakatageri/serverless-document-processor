@@ -1,12 +1,17 @@
-name: Serverless Document Processor CI
+name: Serverless Document Processor CI/CD
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ap-south-1
+  S3_BUCKET: sanjana-serverless-frontend
 
 jobs:
   validate-and-build:
@@ -14,17 +19,31 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Check Python files
         run: |
-          python -m compileall lambda
+          python -m py_compile lambda/*/lambda_function.py
 
       - name: Build Docker image
         run: |
           docker build -t serverless-document-processor ./frontend
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::517588217167:role/GitHubActionsFrontendDeployRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: |
+          aws sts get-caller-identity
+
+      - name: Deploy frontend to S3
+        run: |
+          aws s3 sync ./frontend s3://${{ env.S3_BUCKET }} --exclude "Dockerfile" --delete
